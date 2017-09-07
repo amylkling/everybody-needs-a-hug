@@ -1,0 +1,37 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE project PUBLIC "-//audacityproject-1.3.0//DTD//EN" "http://audacity.sourceforge.net/xml/audacityproject-1.3.0.dtd" >
+<project xmlns="http://audacity.sourceforge.net/xml/" projname="attack laugh_data" version="1.3.0" audacityversion="2.0.4" sel0="0.0000000000" sel1="0.0000000000" vpos="0" h="0.0000000000" zoom="593.4184499191" rate="22000.0">
+	<tags>
+		<tag name="ARTIST" value="Mondfisch89"/>
+	</tags>
+	<wavetrack name="184618__kim-headlee__lkf10" channel="2" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="1" rate="22000" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="13214">
+				<waveblock start="0">
+					<simpleblockfile filename="e0000132.au" len="13214" min="-0.229931" max="0.206717" rms="0.026116"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="377588__yudena__laughchild-bymondfisch89" channel="0" linked="1" mute="0" solo="0" height="150" minimized="0" isSelected="0" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="524288" sampleformat="131073" numsamples="18241">
+				<waveblock start="0">
+					<simpleblockfile filename="e00005b5.au" len="18241" min="-0.437927" max="0.960327" rms="0.056046"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+	<wavetrack name="377588__yudena__laughchild-bymondfisch89" channel="1" linked="0" mute="0" solo="0" height="150" minimized="0" isSelected="0" rate="44100" gain="1.0" pan="0.0">
+		<waveclip offset="0.00000000">
+			<sequence maxsamples="524288" sampleformat="131073" numsamples="18241">
+				<waveblock start="0">
+					<simpleblockfile filename="e00005b2.au" len="18241" min="-0.435791" max="0.959808" rms="0.056038"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+</project>

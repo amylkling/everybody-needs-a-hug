@@ -1,0 +1,25 @@
+to do:
+-somehow fix the stupid collision on walls when hugging
+-directional prompt (find enemy when off screen)
+-fix the dodging so it actually works in a way that's useful, or get rid of it entirely
+-change the way the enemy hurts the player (like swing their arms or shove the player back)
+-make kiss particles follow enemy
+-change controls: left click toggle targeting, right click hug?
+
+done:
+-space bar why D: (take input out of fixed update)
+-change scale of arena so you can't make the controls wonky bc of the camera
+-added the ability to reset player position with the home key in case they clip through the wall via hug bc i don't have time to fix that shit and i don't know how
+-decreased damage while hugging
+-fix the particle effects with the group hug/blow kiss so the group hug one doesn't show up when it shouldn't and should only appear once
+-tutorial separate thing (not just an option)
+-pause menu quit button goes back to main menu
+-fix the charging thing (halo blink?) (it has a light that blinks now but it doesn't have a steady pattern)
+-ADD SOUND
+-after certain rounds of tutorial, popup to go to main game/main menu (changed to be a button the player presses)
+-script tutorial stuff to work properly
+-tutorial messages
+-story messages
+-fix the hugging so it latches on properly (i guess it's fixed..)
+-fix the group hug enemy movement
+-fix the sound sliders in options
