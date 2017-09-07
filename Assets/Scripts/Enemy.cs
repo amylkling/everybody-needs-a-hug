@@ -2,42 +2,41 @@
 using System.Collections;
 using UnityEngine.UI;
 
+//the base script for enemies
+
 public class Enemy : MonoBehaviour {
 
 	#region Variables
-	public int minHealth = 0;
-	public int maxHealth = 50;
-	public float health;
-	[SerializeField]private bool dead;
-	public Slider healthBar;
-	public EnemyUI uiScript;
-	public EnemyUIDirectControl uiControl;
-	[SerializeField]private bool finished = false;
-	private bool hugged = false;
+	public int minHealth = 0;						//the minimum amount for the health bar
+	public int maxHealth = 50;						//the maximum amount for the health bar
+	public float health;							//the current amount of health
+	[SerializeField]private bool dead;				//flag for the "death" state of the enemy
+	public Slider healthBar;						//reference to the health bar UI
+	public EnemyUI uiScript;						//reference to the enemy's UI script
+	public EnemyUIDirectControl uiControl;			//reference to the enemy's UI control script
+	[SerializeField]private bool finished = false;	//controls whether or not the enemy is in a 'finished' state
+	private bool hugged = false;					//the state of being hugged or not
 
-	public float pullInSpeed = 4f;
-	public float pullOffsetX = 1f;
-	public float pullOffsetZ = 1f;
-	public float minShakeRotation = 5f;
-	public float maxShakeRotation = 105f;
-	public float shakeSpeed = 2f;
-	public Slider gHugMeter;
-	//public int gHugIncrease = 25;
-	private bool deadNow = false;
-	public GameControl gm;
-	public float score = 100f;
-	EnemyWeapon weapon;
-	public float kissScore = 50;
-	public float kissDmg = 5f;
+	public float pullInSpeed = 4f;					//how fast the enemy gets pulled in during a group hug
+	public float pullOffsetZ = 1f;					//offset to keep the enemy out of the player's space during a group hug
+	public float minShakeRotation = 5f;				//minimum amount to rotate during hug
+	public float maxShakeRotation = 105f;			//maximum amount to rotate during hug
+	public float shakeSpeed = 2f;					//speed at which to rotate during hug
+	public Slider gHugMeter;						//reference to the group hug meter UI
+	private bool deadNow = false;					//internal flag to react to "death" when it happens
+	public GameControl gm;							//reference to the GameControl script
+	public float score = 100f;						//the amount of score to give the player after being defeated
+	EnemyWeapon weapon;								//reference to the EnemyWeapon script
+	public float kissScore = 50;					//the amount of score to give the player after being hit by a kiss
+	public float kissDmg = 5f;						//the amount of damage to take from a kiss
 	#endregion
 	
 	#region Start
-	//initiate once object is ready
+	//initiate variables at start
 	void Start()
 	{
 		health = maxHealth;
 		uiScript = gameObject.GetComponent<EnemyUI>();
-		//healthBar = uiScript.healthSlider;
 		healthBar.maxValue = maxHealth;
 		uiControl = uiScript.uiScript;
 		gHugMeter = GameObject.Find("GroupHugMeter").GetComponent<Slider>();
@@ -48,13 +47,12 @@ public class Enemy : MonoBehaviour {
 		}
 	}
 	#endregion
-	
 
 	#region Update
 	// Update is called once per frame
 	void Update()
 	{
-		//do things when hugged by player
+		//"shake" (ie rotate haphazardly) when hugged by player
 		if (hugged)
 		{
 			Quaternion newRot = Quaternion.identity;
@@ -64,11 +62,10 @@ public class Enemy : MonoBehaviour {
 			transform.rotation = Quaternion.Lerp(transform.rotation, newRot, Time.deltaTime * shakeSpeed);
 		}
 
-		//do things when the enemy "dies"
+		//when the enemy "dies", update the group hug meter, scoreboard, and enemy state, and disable the enemy's weapon
 		if (deadNow)
 		{
 			Debug.Log(gameObject.name + ": I don't want to fight you anymore");
-			//gHugMeter.value += gHugIncrease;
 			gHugMeter.value += gHugMeter.maxValue/transform.parent.childCount;
 			gm.Scoreboard(score);
 			if (weapon != null)
@@ -78,44 +75,28 @@ public class Enemy : MonoBehaviour {
 			}
 			dead = true;
 			deadNow = false;
-			//Destroy (gameObject);
 		}
 
-		//do things when the enemy is finished off
+		//when the enemy is finished off by a group hug, move it dramatically towards the player and then destroy it
 		if (finished)
 		{
 			Debug.Log(gameObject.name + ": love is over!");
 
-			//move the enemy towards the player, dramatically
-			//do this with navmesh?
 			GameObject player = GameObject.FindGameObjectWithTag("Player");
 			transform.LookAt(player.transform.position);
 			float step = pullInSpeed * Time.deltaTime;
 			Vector3 newPos = new Vector3(player.transform.position.x, transform.position.y, 
-				player.transform.position.z + pullOffsetZ);
-			//transform.position = Vector3.Lerp(transform.position, newPos, step);
+											player.transform.position.z + pullOffsetZ);
+
+			//if the enemy hasn't reached the offset from the player's pos, keep moving
 			if (Vector3.Distance(transform.position, player.transform.position) > pullOffsetZ + 0.5f)
 			{
 				transform.position = Vector3.MoveTowards(transform.position, newPos, step);
-				//Debug.Log(Vector3.Distance(transform.position, player.transform.position));
 			}
 			else
 			{
 				Destroy(gameObject);
 			}
-
-			/*
-			RaycastHit hit;
-
-			if (Physics.Raycast(transform.position, transform.forward, out hit))
-			{
-				if (hit.collider.tag == "Player")
-				{
-					
-				}
-			}*/
-
-			//Destroy(gameObject);
 		}
 	}
 	#endregion
@@ -136,13 +117,14 @@ public class Enemy : MonoBehaviour {
 	#endregion
 	
 	#region Death
-	//set the enemy's state to "dead"
+	//react to its death
 	void Death()
 	{
 		deadNow = true;
 	}
 	#endregion
 
+	#region Get Sets
 	//allow other scripts to check if the enemy is dead
 	public bool Dead
 	{
@@ -162,10 +144,13 @@ public class Enemy : MonoBehaviour {
 		get{return hugged;}
 		set{hugged = value;}
 	}
+	#endregion
 
+	#region OnParticleCollision
 	//detect when a blown kiss hits the enemy
 	void OnParticleCollision(GameObject e)
 	{
+		//react to the kiss if the enemy isn't a training dummy
 		if (GetComponent<EnemyAI>() == null)
 		{
 			gm.Scoreboard(kissScore);
@@ -173,4 +158,5 @@ public class Enemy : MonoBehaviour {
 			Destroy(e);
 		}
 	}
+	#endregion
 }

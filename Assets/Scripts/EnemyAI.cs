@@ -3,77 +3,88 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+//script controlling the enemy's more advanced reactions
+
 public class EnemyAI : MonoBehaviour 
 {
-
+	#region Variables
 	GameObject player;						//reference player object
 	NavMeshAgent agent;						//the NavMeshAgent attached to this enemy object
+	public GameControl gm;					//reference to the GameControl script
+
 	bool moveIn = true;						//determines when the enemy can move towards the player
 	public float backOffDist = 3f;			//how far back the enemy will go after hitting the player
 	public float maxDist = 5f;				//the furthest the player can be before the enemy starts moving again
 	public float backOffTime = 3f;			//how much time the enemy waits before attempting another attack
 	private float backOffTimer = 0f;		//timer that counts down how long the enemy waits between attacks
 	bool backOff = false;					//determines when the timer starts
-	public float attackDistLow = 3f;
-	public float attackDistHigh = 4f;
-	private float chargeTimer = 0f;
-	public float chargeTime = 5f;
-	private bool chargeUp = false;
-	public float firstThreshold = 3f;
-	public float secondThreshold = 1f;
-	public Color flashCol;
-	private Color baseCol;
-	private Vector3 curPos;
-	private bool theLoop = false;
-	private bool navEngage = false;
-	private float coolTimer = 0f;
-	public float coolDownTime = 5f;
-	private bool pathPlacement = true;
-	private bool attEngage = true;
-	bool smooched = false;
-	private float smoochTimer = 0f;
-	public float smoochEffectTime = 3f;
-	private bool iLeap = false;
-	public GameControl gm;
-	public float kissScore = 50;
-	public Light halo;
-	public AudioSource soundfx;
-	public AudioClip attack1;
-	public AudioClip attack2;
-	public AudioClip attack3;
-	public AudioClip attack4;
-	public AudioClip attack5;
-	public AudioClip attack6;
-	public AudioClip attack7;
-	public AudioClip attack8;
-	public AudioClip attack9;
-	public AudioClip attack10;
-	public AudioClip attack11;
-	private AudioClip[] attackSounds;
-	public float kissDmg = 5f;
-	public string attackPathName;
-	public iTweenPath path;
+	public float attackDistLow = 3f;		//lower bound of the enemy's attack range
+	public float attackDistHigh = 4f;		//upper bound of the enemy's attack range
+	private float chargeTimer = 0f;			//timer to make the enemy wait before attacking
+	public float chargeTime = 5f;			//how much time the enemy has to wait before it can attack
+	private bool chargeUp = false;			//determines if the enemy is charging up an attack
+	public float firstThreshold = 3f;		//the first point in the timer at which the enemy starts to flash a color
+	public float secondThreshold = 1f;		//the next point in the timer at which the enemy flashes faster
+	public Color flashCol;					//the color of the enemy's flash
+	public Light halo;						//the light that makes it look like the enemy is flashing
 
+	private bool theLoop = false;			//controls when the enemy can attempt to attack
+	private bool navEngage = false;			//controls the state of the enemy's NavMesh
+	private float coolTimer = 0f;			//timer that prevents the enemy from leaping
+	public float coolDownTime = 5f;			//the amount of time to wait between leaps
+	private bool pathPlacement = true;		//ensures the enemy only decides its path once per leap
+	private bool attEngage = true;			//controls the enemy's ability to attack
+	private bool iLeap = false;				//determines when the enemy is done leaping
+
+	bool smooched = false;					//the smooched state of the enemy
+	private float smoochTimer = 0f;			//timer for the length of the smooched state
+	public float smoochEffectTime = 3f;		//the amount of time to be in the smooched state
+	public float kissScore = 50;			//the score to award the player with after the enemy is hit by a kiss
+	public float kissDmg = 5f;				//the amount of damage the enemy takes from a kiss
+
+	public AudioSource soundfx;				//the source to feed the soundfx to
+	//soundfx to randomly choose from to play when attacking
+	public AudioClip attack1;				
+	public AudioClip attack2;				
+	public AudioClip attack3;				
+	public AudioClip attack4;				
+	public AudioClip attack5;				
+	public AudioClip attack6;				
+	public AudioClip attack7;				
+	public AudioClip attack8;				
+	public AudioClip attack9;				
+	public AudioClip attack10;				
+	public AudioClip attack11;				
+	private AudioClip[] attackSounds;		//the array of all of these soundfx
+
+	public string attackPathName;			//name of the path of this enemy
+	public iTweenPath path;					//reference to the path of this enemy
+	#endregion
+
+	#region Start
 	// Use this for initialization
 	void Start () 
 	{
 		player = GameObject.FindGameObjectWithTag("Player");
 		agent = GetComponent<NavMeshAgent>();
 		backOffTimer = backOffTime;
-		baseCol = GetComponent<Renderer>().material.color;
 		coolTimer = coolDownTime;
 		smoochTimer = smoochEffectTime;
 		chargeTimer = chargeTime;
 		gm = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<GameControl>();
 		halo = GetComponent<Light>();
 		halo.enabled = false;
+
 		path = GetComponent<iTweenPath>();
+		//add a random number to the path so it can be unique from other enemies
 		attackPathName = "jumper " + Random.Range(1, 100);
 		path.pathName = attackPathName;
+		//ensure the path is actually activated
 		if(!iTweenPath.paths.ContainsKey(path.pathName))
 		{
 			iTweenPath.paths.Add(path.pathName.ToLower(), path);
 		}
+
 		soundfx = GetComponent<AudioSource>();
 		attackSounds = new AudioClip[11];
 		attackSounds[0] = attack1;
@@ -88,10 +99,13 @@ public class EnemyAI : MonoBehaviour
 		attackSounds[9] = attack10;
 		attackSounds[10] = attack11;
 	}
-	
+	#endregion
+
+	#region Update
 	// Update is called once per frame
 	void Update () 
 	{
+		//only act as long as the enemy isn't dead or smooched
 		if (!GetComponent<Enemy>().Dead)
 		{
 			if (!smooched)
@@ -108,8 +122,8 @@ public class EnemyAI : MonoBehaviour
 					agent.SetDestination(player.transform.position);
 				}
 
+				//calculate the distance between the enemy and the player
 				float dist = Vector3.Distance(transform.position, player.transform.position);
-
 				//Debug.Log(dist);
 
 				//recalculate leap path, unless already leaping
@@ -126,7 +140,6 @@ public class EnemyAI : MonoBehaviour
 				//when it gets in range, start preparing to attack
 				if (dist > attackDistLow && dist <= attackDistHigh && attEngage)
 				{
-					//agent.Stop();
 					agent.enabled = false;
 					moveIn = false;
 					navEngage = false;
@@ -134,9 +147,7 @@ public class EnemyAI : MonoBehaviour
 				 	*with flashing color that gets faster as a timer goes down
 			 		*Then call the actual attack function
 					 *that makes it leap at the player and then stay still for a short time*/
-					//curPos = transform.position;
 					ChargeUp();
-					//agent.Resume();
 				}
 
 				//when the leap is done, call activateNav
@@ -160,7 +171,7 @@ public class EnemyAI : MonoBehaviour
 					if (backOffTimer <= 0)
 					{
 						backOffTimer = backOffTime;
-						agent.Resume();
+						agent.isStopped = false;
 						moveIn = true;
 						backOff = false;
 					}
@@ -186,8 +197,6 @@ public class EnemyAI : MonoBehaviour
 					if (chargeTimer <= chargeTime && chargeTimer > firstThreshold)
 					{
 						//flash at a slow speed
-						//Debug.Log("Time: " + chargeTimer + " HRAA-");
-						//ChargeUp("slow", 1f);
 						//call a coroutine to flash the halo at speed
 						StartCoroutine(FlashColor(1f));
 						Debug.Log("HRAA-");
@@ -195,9 +204,6 @@ public class EnemyAI : MonoBehaviour
 					else if (chargeTimer <= firstThreshold && chargeTimer > secondThreshold)
 					{
 						//flash at a faster speed
-						//iTween.ColorTo(gameObject, flashCol, 1f);
-						//Debug.Log("Time: " + chargeTimer + " -AAAAA-");
-						//ChargeUp("faster", 0.8f);
 						//call a coroutine to flash the halo at speed
 						StartCoroutine(FlashColor(0.8f));
 						Debug.Log("-AAAAA-");
@@ -205,9 +211,6 @@ public class EnemyAI : MonoBehaviour
 					else if (chargeTimer <= secondThreshold && chargeTimer > 0)
 					{
 						//flash at fastest speed
-						//iTween.ColorTo(gameObject, flashCol, 0.5f);
-						//Debug.Log("Time: " + chargeTimer + " -AAAAAAAAAAAA");
-						//ChargeUp("fastest", 0.2f);
 						//call a coroutine to flash the halo at speed
 						StartCoroutine(FlashColor(0.5f));
 						Debug.Log("-AAAAAAAAAAAA");
@@ -219,12 +222,13 @@ public class EnemyAI : MonoBehaviour
 						Attack();
 					}
 				}
-			} 
+			}
 			else
 			{
+				//if the enemy is smooched, stun it for a short time
 				if (agent.isActiveAndEnabled)
 				{
-					agent.Stop();
+					agent.isStopped = true;
 				}
 
 				smoochTimer -= Time.deltaTime;
@@ -234,84 +238,33 @@ public class EnemyAI : MonoBehaviour
 					smoochTimer = smoochEffectTime;
 					if (agent.isActiveAndEnabled)
 					{
-						agent.Resume();
+						agent.isStopped = false;
 					}
 				}
 			}
 		}
 		else
 		{
-
+			//if the enemy is dead and finished, deactivate the navmesh and rigidbody 
+			//so it doesn't interfere with the group hug 
 			if (gameObject.GetComponent<Enemy>().Finished)
 			{
 				agent.enabled = false;
 				GetComponent<Rigidbody>().Sleep();
 			}
 		}
-		/*
-		//back off when it gets too close
-		if (agent.remainingDistance <= agent.stoppingDistance && !GetComponent<Enemy>().Hugged)
-		{
-			agent.Move(transform.forward*-1*backOffDist);
-			agent.Stop();
-			moveIn = false;
-			if (!GetComponent<Enemy>().Dead)
-			{
-				backOff = true;
-			}
-		}*/
-
-		/*attack and then leap back
-		if (agent.remainingDistance <= agent.stoppingDistance)
-		{
-			agent.Move(transform.forward*-1*backOffDist);
-			agent.Stop();
-			moveIn = false;
-		}*/
-
-		/*
-		//when the player gets too far away, move to them again
-		if(Vector3.Distance(transform.position, player.transform.position) > maxDist)
-		{
-			agent.Resume();
-			moveIn = true;
-		}*/
-			
 	}
+	#endregion
 
-	//prepare to attack
+	#region ChargeUp
+	//set it to prepare to attack
 	void ChargeUp()
 	{
-		//function to "charge" a leap attack
-		//with flashing color that gets faster as a timer goes down
 		chargeUp = true;
 	}
+	#endregion
 
-	void ChargeUp(string howFast, float speed)
-	{
-		switch(howFast)
-		{
-			case "slow":
-				//Debug.Log("slow" + Time.time);
-				//iTween.ColorTo(gameObject, flashCol, speed);
-				//call a coroutine to flash the halo at speed
-				StartCoroutine(FlashColor(speed));
-				break;
-			case "faster":
-				//Debug.Log("faster" + Time.time);
-				//iTween.ColorTo(gameObject, flashCol, speed);
-				//call a coroutine to flash the halo at speed
-				StartCoroutine(FlashColor(speed));
-				break;
-			case "fastest":
-				//Debug.Log("fastest" + Time.time);
-				//iTween.ColorTo(gameObject, flashCol, speed);
-				//call a coroutine to flash the halo at speed
-				StartCoroutine(FlashColor(speed));
-				break;
-		}
-	}
-
+	#region Attack
 	//leap at the player
 	void Attack()
 	{
@@ -322,15 +275,18 @@ public class EnemyAI : MonoBehaviour
 			attEngage = false;
 			pathPlacement = false;
 
+			//choose a random sound to play as it leaps
 			int ran = Random.Range(0,attackSounds.Length);
 			soundfx.PlayOneShot(attackSounds[ran]);
-			//iTween.MoveTo(gameObject, iTween.Hash("path", iTweenPath.GetPath("jumper"), "time", 2f, "easetype", iTween.EaseType.linear, "oncomplete", "activateNav", "oncompletetarget", gameObject, "looptype", iTween.LoopType.none));
+
+			//actually leap
 			iTween.MoveTo(gameObject, iTween.Hash("path", iTweenPath.GetPath(attackPathName), "time", 2f, "easetype", iTween.EaseType.linear, "looptype", iTween.LoopType.none));
 			iLeap = true;
 		}
-
 	}
+	#endregion
 
+	#region activateNav
 	//activate leap cooldown and reactivates dynamic pathing
 	void activateNav()
 	{
@@ -341,7 +297,10 @@ public class EnemyAI : MonoBehaviour
 		iLeap = false;
 		navEngage = true;
 	}
+	#endregion
 
+	#region FlashColor Coroutine
+	//make the light flash
 	private IEnumerator FlashColor(float speed)
 	{
 		Debug.Log("don't forget about me, still running over here");
@@ -349,20 +308,26 @@ public class EnemyAI : MonoBehaviour
 		yield return new WaitForSeconds(speed);
 		halo.enabled = false;
 	}
+	#endregion
 
-	//compare two vector3's
+	#region V3Equal
+	//compare two vector3s
 	public bool V3Equal(Vector3 a, Vector3 b)
 	{
 		//Debug.Log("sqr mag: " + Vector3.SqrMagnitude(a - b));
 		return Vector3.SqrMagnitude(a - b) < 0.1;
 	}
+	#endregion
 
-	//for other scripts to set kissie
+	#region Smooch
+	//for other scripts to set smooched
 	public void Smooch(bool b)
 	{
 		smooched = b;
 	}
+	#endregion
 
+	#region OnParticleCollision
 	//detect when a blown kiss hits the enemy
 	void OnParticleCollision(GameObject e)
 	{
@@ -371,12 +336,5 @@ public class EnemyAI : MonoBehaviour
 		GetComponent<Enemy>().TakeDmg(kissDmg);
 		Destroy(e);
 	}
-
-	/*void OnCollisionEnter(Collision col)
-	{
-		if (col.gameObject.tag == "Player")
-		{
-			agent.Move(Vector3.back);
-		}
-	}*/
+	#endregion
 }
