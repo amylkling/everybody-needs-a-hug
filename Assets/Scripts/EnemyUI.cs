@@ -2,29 +2,34 @@
 using System.Collections;
 using UnityEngine.UI;
 
+//creates the enemy health bar and determines its position and visibility
+
 public class EnemyUI : MonoBehaviour {
 
-	//script variables
-	private Enemy enemyScript;
-	public EnemyUIDirectControl uiScript;
+	#region Variables
+	//scripts
+	private Enemy enemyScript;					//reference to the enemy's base script
+	public EnemyUIDirectControl uiScript;		//reference to the enemy's UI control script
 
-	//variables for creating GUI
-	public Canvas canvas;
-	public GameObject healthPrefab;
+	//creating GUI
+	public Canvas canvas;						//reference to the scene's canvas
+	public GameObject healthPrefab;				//reference to the UI prefab
 
-	//variables for manipulating GUI
-	public float healthPanelOffset = 1.2f;
-	public GameObject healthPanel;
-	public Slider healthSlider;
-	private Renderer selfRenderer;
-	private CanvasGroup canvasGroup;
-	public float viewRange = 15f;
+	//manipulating GUI
+	public float healthPanelOffset = 1.2f;		//amount to offset when displaying the health bar over the enemy
+	public GameObject healthPanel;				//reference to the parent UI object
+	public Slider healthSlider;					//reference to the health bar UI
+	private Renderer selfRenderer;				//reference to the renderer on the enemy
+	private CanvasGroup canvasGroup;			//reference to the UI's canvasgroup
 
-	private GameControl control;
-	
+	//other
+	private GameControl control;				//reference to the GameControl script
+	#endregion
 
+	#region Awake
 	// Use this for initialization
 	void Awake () {
+		
 		//initialize and instantiate
 		canvas = GameObject.Find("EnemyCanvas").GetComponent<Canvas>();
 		enemyScript = gameObject.GetComponent<Enemy>();
@@ -33,20 +38,19 @@ public class EnemyUI : MonoBehaviour {
 		
 		healthSlider = healthPanel.GetComponent<Slider>();
 		selfRenderer = gameObject.GetComponent<Renderer>();
+		canvasGroup = healthPanel.GetComponent<CanvasGroup>();
+		control = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<GameControl>();
 
 		//let the Enemy script attached to the same enemy know which health bar belongs to it
 		enemyScript.healthBar = healthSlider;
 
-		canvasGroup = healthPanel.GetComponent<CanvasGroup>();
-
-		//this is purely so that this script can tell EnemyUIDirectControl script which enemy it is associated with
+		//tell EnemyUIDirectControl script which enemy it is associated with
 		uiScript = healthPanel.GetComponent<EnemyUIDirectControl>();
 		uiScript.enemyScript = enemyScript;
-
-		control = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<GameControl>();
-	
 	}
-	
+	#endregion
+
+	#region Update
 	// Update is called once per frame
 	void Update () {
 
@@ -55,11 +59,7 @@ public class EnemyUI : MonoBehaviour {
 		Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
 		healthPanel.transform.position = new Vector3(screenPos.x, screenPos.y, screenPos.z);
 
-		//track camera distance and make the health bar invisible when the player is far enough away
-		//float distance = (worldPos - Camera.main.transform.position).magnitude;
-		//float alpha = viewRange - distance / 2.0f;
-		//SetAlpha(alpha);
-
+		//make the health bar visible only when the enemy is visible and the game is not over
 		if (selfRenderer.isVisible && !control.CheckGameOver)
 		{
 			healthPanel.SetActive(true);
@@ -69,15 +69,16 @@ public class EnemyUI : MonoBehaviour {
 			healthPanel.SetActive(false);
 		}
 
+		//after the tutorial is displayed, lower opacity of the health bar
 		if (!control.CheckTutOn)
 		{
 			SetAlpha(0.5f);
 		}
-
-	
 	}
+	#endregion
 
-	//make health bar invisible
+	#region SetAlpha
+	//change the alpha value and deactivate the health bar if it is 0
 	public void SetAlpha(float alpha)
 	{
 		canvasGroup.alpha = alpha;
@@ -91,5 +92,5 @@ public class EnemyUI : MonoBehaviour {
 			healthPanel.SetActive(true);
 		}
 	}
-	
+	#endregion
 }

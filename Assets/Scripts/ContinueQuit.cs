@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class ContinueQuit : MonoBehaviour {
 
+	#region Continue
 	//changes to the main scene, with the main game
 	public void Continue()
 	{
@@ -18,7 +19,9 @@ public class ContinueQuit : MonoBehaviour {
 			GameObject.Find("UI").GetComponent<TrainingOptions>().TrainingMode = false;
 		}
 	}
+	#endregion
 
+	#region ReturnMainMenu
 	//changes to the main menu scene
 	public void ReturnMainMenu()
 	{
@@ -30,4 +33,5 @@ public class ContinueQuit : MonoBehaviour {
 			Destroy(GameObject.Find("UI"));
 		}
 	}
+	#endregion
 }

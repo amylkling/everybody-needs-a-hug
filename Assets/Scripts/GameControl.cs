@@ -5,42 +5,31 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 //controls all misc. aspects of the game
-//such as score and UI and other management things
+//such as score, UI, game state, and other management things
 
 public class GameControl : MonoBehaviour {
 
-	public GameObject enemyTrainingPrefab;
-	public GameObject enemyPrefab;
-	public GameObject enemyGroup;
-	private GameObject player;
-	public Canvas mainCanvas;
-	public int dummyRespawnCount = 4;
-	public int enemyRespawnCount = 4;
-	public float spawnRadius = 5f;
-	public Text scoreText;
-	private float scoreTotal;
-	bool trainingMode;
-	public GameObject gameOverPanel;
-	private Pause pauseScript;
-	private bool gameOver = false;
-	public Text loseText;
-	public Text winText;
-	public Text finalScoreText;
-	private int roundCountDown;
-	private int roundCountUp;
-	public int wavesNum = 2;
-	public int healthReward = 30;				//amount of health to get back after a group hug
-	public Slider gHugMeter;
-	public Text waveNumText;
-	public AudioSource soundfx;
-	public AudioClip winSound;
-	public AudioClip loseSound;
-	public GameObject playerHealth;
+	#region Variables
+	//objects
+	public GameObject enemyTrainingPrefab;		//the training dummy prefab
+	public GameObject enemyPrefab;				//the enemy prefab
+	public GameObject enemyGroup;				//the parent holder object for the enemies
+	private GameObject player;					//the player
 
-	public GameObject storyPanel;
-	public GameObject tutorialPanel;
-	public GameObject continuePanel;
-	public Text[] tutorialTexts;
+	//UI
+	public Canvas mainCanvas;					//the main canvas
+	public Text scoreText;						//the text displaying the score
+	public GameObject gameOverPanel;			//the panel declaring the game is over
+	public Text loseText;						//the text displayed on the gameOverPanel if the player lost
+	public Text winText;						//the text displayed on the gameOverPanel if the player won
+	public Text finalScoreText;					//the text proclaiming the final score to the player
+	public Slider gHugMeter;					//the group hug meter
+	public Text waveNumText;					//the text displaying the number of waves
+	public GameObject playerHealth;				//the player's health bar
+	public GameObject storyPanel;				//the panel explaining the story of the game
+	public GameObject tutorialPanel;			//the panel that displays the tutorial texts
+	public GameObject continuePanel;			//the panel at the end of the tutorial
+	public Text[] tutorialTexts;				//array to hold all the tutorial texts
 	public Text tutorialText1;
 	public Text tutorialText2;
 	public Text tutorialText3;
@@ -51,12 +40,39 @@ public class GameControl : MonoBehaviour {
 	public Text tutorialText8;
 	public Text tutorialText9;
 	public Text tutorialText10;
-	public float tutorialUITime = 20f;
-	private float tutorialUITimer = 0;
-	private bool tutorialActive = false;
-	private bool tutOn = false;
-	private bool tutOff = false;
 
+	//spawning
+	public int dummyRespawnCount = 4;			//how many dummies to spawn in a new wave
+	public int enemyRespawnCount = 4;			//how many enemies to spawn in a new wave
+	public float spawnRadius = 5f;				//radius of the circle within which spawn locations are randomly decided
+
+	//scoring
+	private float scoreTotal;					//keeps track of the total score
+
+	//game states
+	bool trainingMode;							//is the game in the tutorial state?
+	private Pause pauseScript;					//the script controlling the pause state of the game
+	private bool gameOver = false;				//is the game over?
+
+	//waves/rounds
+	private int roundCountDown;					//counts down to 0 as the player completes waves, for determining when the game is over
+	private int roundCountUp;					//counts up as the player completes waves, for displaying the current wave #
+	public int wavesNum = 2;					//the total number of waves
+	public int healthReward = 30;				//amount of health to get back after a group hug/wave is complete
+
+	//sounds
+	public AudioSource soundfx;					//AudioSource to feed sound to
+	public AudioClip winSound;					//sound that plays when the player wins
+	public AudioClip loseSound;					//sound that plays when the player loses
+
+	//tutorial related
+	public float tutorialUITime = 20f;			//how long to display each tutorial message
+	private bool tutorialActive = false;		//activates the tutorial messages
+	private bool tutOn = false;					//flag for the tutorial coroutine running
+	private bool tutOff = false;				//flag for the tutorial coroutine finishing 
+	#endregion
+
+	#region Start
 	// Use this for initialization
 	void Start () 
 	{
@@ -65,6 +81,8 @@ public class GameControl : MonoBehaviour {
 		scoreText = GameObject.Find("Score").GetComponent<Text>();
 		scoreText.text = "Score: ";
 		scoreTotal = 0;
+		//make sure the UI canvas is actually there before trying to use it
+		//since it is only created from the Main Menu scene
 		if (GameObject.Find("UI") != null)
 		{
 			trainingMode = GameObject.Find("UI").GetComponent<TrainingOptions>().TrainingMode;
@@ -77,8 +95,10 @@ public class GameControl : MonoBehaviour {
 		//trainingMode = true;
 		#endif
 
+		//check if the game is in tutorial mode and initialize appropriately
 		if (!trainingMode)
 		{
+			//these things are only found in the main game scene
 			gameOverPanel = GameObject.Find("GameOverPanel");
 			winText = GameObject.Find("WinText").GetComponent<Text>();
 			loseText = GameObject.Find("LoseText").GetComponent<Text>();
@@ -134,10 +154,11 @@ public class GameControl : MonoBehaviour {
 			Debug.Log(tutorialTexts[9].name + " is loaded!");
 			tutorialPanel.SetActive(false);
 			continuePanel.SetActive(false);
-			tutorialUITimer = tutorialUITime;
+
 			//Set time.timescale to 0, this will cause animations and physics to stop updating
 			Time.timeScale = 0;
 		}
+
 		gameOver = false;
 		roundCountDown = wavesNum;
 		gHugMeter = GameObject.Find("GroupHugMeter").GetComponent<Slider>();
@@ -146,7 +167,9 @@ public class GameControl : MonoBehaviour {
 		waveNumText.text = "Wave: " + roundCountUp.ToString("D");
 		soundfx = GetComponent<AudioSource>();
 	}
-	
+	#endregion
+
+	#region Update
 	// Update is called once per frame
 	void Update () 
 	{
@@ -273,17 +296,22 @@ public class GameControl : MonoBehaviour {
 				}
 			}
 
+			//deactivate the ability to use the group hug
 			player.GetComponent<Huggles>().NoMore = false;
 		}
 	}
+	#endregion
 
+	#region Scoreboard
 	//update the score UI
 	public void Scoreboard(float score)
 	{
 		scoreTotal += score;
 		scoreText.text = "Score: " + scoreTotal.ToString("0000");
 	}
+	#endregion
 
+	#region GameOver Coroutine
 	//when the game is over, pause everything and display the game over screen
 	//the bool determines which message appears
 	public IEnumerator GameOver(bool win)
@@ -319,7 +347,9 @@ public class GameControl : MonoBehaviour {
 		finalScoreText.text = "Final " + scoreText.text;
 		yield break;
 	}
+	#endregion
 
+	#region ResetGame
 	//reset the game back to the main menu
 	public void ResetGame()
 	{
@@ -335,7 +365,10 @@ public class GameControl : MonoBehaviour {
 		Time.timeScale = 1;
 		SceneManager.LoadScene(0);
 	}
+	#endregion
 
+	#region ContinueTraining
+	//either start the tutorial or stay in training mode, depending on which pop up is open
 	public void ContinueTraining()
 	{
 		if (storyPanel.activeSelf)
@@ -350,7 +383,10 @@ public class GameControl : MonoBehaviour {
 		//Set time.timescale to 1, this will cause animations and physics to continue updating at regular speed
 		Time.timeScale = 1;
 	}
+	#endregion
 
+	#region ShowTutorial
+	//show each tutorial message one at a time, for a given length of time
 	private IEnumerator ShowTutorial()
 	{
 		Debug.Log("tutorial on");
@@ -367,7 +403,9 @@ public class GameControl : MonoBehaviour {
 		tutOn = false;
 		tutOff = true;
 	}
+	#endregion
 
+	#region Gets
 	//so other scripts can see if the game is over
 	public bool CheckGameOver
 	{
@@ -379,4 +417,5 @@ public class GameControl : MonoBehaviour {
 	{
 		get {return tutOn;}
 	}
+	#endregion
 }

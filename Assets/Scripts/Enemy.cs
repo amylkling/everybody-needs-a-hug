@@ -7,23 +7,29 @@ using UnityEngine.UI;
 public class Enemy : MonoBehaviour {
 
 	#region Variables
+	//health and UI
 	public int minHealth = 0;						//the minimum amount for the health bar
 	public int maxHealth = 50;						//the maximum amount for the health bar
 	public float health;							//the current amount of health
-	[SerializeField]private bool dead;				//flag for the "death" state of the enemy
 	public Slider healthBar;						//reference to the health bar UI
 	public EnemyUI uiScript;						//reference to the enemy's UI script
 	public EnemyUIDirectControl uiControl;			//reference to the enemy's UI control script
+	public Slider gHugMeter;						//reference to the group hug meter UI
+
+	//states
 	[SerializeField]private bool finished = false;	//controls whether or not the enemy is in a 'finished' state
 	private bool hugged = false;					//the state of being hugged or not
+	[SerializeField]private bool dead;				//flag for the "death" state of the enemy
+	private bool deadNow = false;					//internal flag to react to "death" when it happens
 
+	//movement
 	public float pullInSpeed = 4f;					//how fast the enemy gets pulled in during a group hug
 	public float pullOffsetZ = 1f;					//offset to keep the enemy out of the player's space during a group hug
 	public float minShakeRotation = 5f;				//minimum amount to rotate during hug
 	public float maxShakeRotation = 105f;			//maximum amount to rotate during hug
 	public float shakeSpeed = 2f;					//speed at which to rotate during hug
-	public Slider gHugMeter;						//reference to the group hug meter UI
-	private bool deadNow = false;					//internal flag to react to "death" when it happens
+
+	//other
 	public GameControl gm;							//reference to the GameControl script
 	public float score = 100f;						//the amount of score to give the player after being defeated
 	EnemyWeapon weapon;								//reference to the EnemyWeapon script

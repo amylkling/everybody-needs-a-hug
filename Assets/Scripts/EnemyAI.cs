@@ -8,10 +8,12 @@ using UnityEngine.AI;
 public class EnemyAI : MonoBehaviour 
 {
 	#region Variables
+	//objects and scripts
 	GameObject player;						//reference player object
 	NavMeshAgent agent;						//the NavMeshAgent attached to this enemy object
 	public GameControl gm;					//reference to the GameControl script
 
+	//movement and attack parameters
 	bool moveIn = true;						//determines when the enemy can move towards the player
 	public float backOffDist = 3f;			//how far back the enemy will go after hitting the player
 	public float maxDist = 5f;				//the furthest the player can be before the enemy starts moving again
@@ -28,6 +30,7 @@ public class EnemyAI : MonoBehaviour
 	public Color flashCol;					//the color of the enemy's flash
 	public Light halo;						//the light that makes it look like the enemy is flashing
 
+	//attacking
 	private bool theLoop = false;			//controls when the enemy can attempt to attack
 	private bool navEngage = false;			//controls the state of the enemy's NavMesh
 	private float coolTimer = 0f;			//timer that prevents the enemy from leaping
@@ -36,12 +39,14 @@ public class EnemyAI : MonoBehaviour
 	private bool attEngage = true;			//controls the enemy's ability to attack
 	private bool iLeap = false;				//determines when the enemy is done leaping
 
+	//player's kiss
 	bool smooched = false;					//the smooched state of the enemy
 	private float smoochTimer = 0f;			//timer for the length of the smooched state
 	public float smoochEffectTime = 3f;		//the amount of time to be in the smooched state
 	public float kissScore = 50;			//the score to award the player with after the enemy is hit by a kiss
 	public float kissDmg = 5f;				//the amount of damage the enemy takes from a kiss
 
+	//sound
 	public AudioSource soundfx;				//the source to feed the soundfx to
 	//soundfx to randomly choose from to play when attacking
 	public AudioClip attack1;				
@@ -57,6 +62,7 @@ public class EnemyAI : MonoBehaviour
 	public AudioClip attack11;				
 	private AudioClip[] attackSounds;		//the array of all of these soundfx
 
+	//pathing
 	public string attackPathName;			//name of the path of this enemy
 	public iTweenPath path;					//reference to the path of this enemy
 	#endregion
