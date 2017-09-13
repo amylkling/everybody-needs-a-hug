@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+//controls the transition to the training/tutorial scene
+
 public class TrainingOptions : MonoBehaviour {
 
+	#region Variables
 	public int sceneToStart = 2;										//Index number in build settings of scene to load if changeScenes is true
 	public bool changeScenes;											//If true, load a new scene when Start is pressed, if false, fade out UI and continue in single scene
 	public bool changeMusicOnStart;										//Choose whether to continue playing menu music or start a new music clip
@@ -13,7 +16,7 @@ public class TrainingOptions : MonoBehaviour {
 	[HideInInspector] public bool inMainMenu = true;					//If true, pause button disabled in main menu (Cancel in input manager, default escape key)
 	[HideInInspector] public Animator animColorFade; 					//Reference to animator which will fade to and from black when starting game.
 	[HideInInspector] public Animator animMenuAlpha;					//Reference to animator that will fade out alpha of MenuPanel canvas group
-	public AnimationClip fadeColorAnimationClip;		//Animation clip fading to color (black default) when changing scenes
+	public AnimationClip fadeColorAnimationClip;						//Animation clip fading to color (black default) when changing scenes
 	[HideInInspector] public AnimationClip fadeAlphaAnimationClip;		//Animation clip fading out UI elements alpha
 
 
@@ -21,8 +24,10 @@ public class TrainingOptions : MonoBehaviour {
 	private float fastFadeIn = .01f;									//Very short fade time (10 milliseconds) to start playing music immediately without a click/glitch
 	private ShowPanels showPanels;										//Reference to ShowPanels script on UI GameObject, to show and hide panels
 
-	private bool trainingMode = false;
+	private bool trainingMode = false;									//whether or not the training scene has been activated
+	#endregion
 
+	#region Awake
 	void Awake()
 	{
 		//Get a reference to ShowPanels attached to UI object
@@ -31,8 +36,10 @@ public class TrainingOptions : MonoBehaviour {
 		//Get a reference to PlayMusic attached to UI object
 		playMusic = GetComponent<PlayMusic> ();
 	}
+	#endregion
 
-
+	#region TrainingButtonClicked
+	//function to activate after the UI button for training has been clicked
 	public void TrainingButtonClicked()
 	{
 		trainingMode = true;
@@ -60,19 +67,24 @@ public class TrainingOptions : MonoBehaviour {
 			//Call the StartGameInScene function to start game without loading a new scene.
 			StartGameInScene();
 		}
-
 	}
+	#endregion
 
+	#region OnEnable
 	void OnEnable()
 	{
 		SceneManager.sceneLoaded += SceneWasLoaded;
 	}
+	#endregion
 
+	#region OnDisable
 	void OnDisable()
 	{
 		SceneManager.sceneLoaded -= SceneWasLoaded;
 	}
+	#endregion
 
+	#region SceneWasLoaded
 	//Once the level has loaded, check if we want to call PlayLevelMusic
 	void SceneWasLoaded(Scene scene, LoadSceneMode mode)
 	{
@@ -82,8 +94,9 @@ public class TrainingOptions : MonoBehaviour {
 			playMusic.PlayLevelMusic ();
 		}	
 	}
+	#endregion
 
-
+	#region LoadDelayed
 	public void LoadDelayed()
 	{
 		//Pause button now works if escape is pressed since we are no longer in Main menu.
@@ -95,13 +108,17 @@ public class TrainingOptions : MonoBehaviour {
 		//Load the selected scene, by scene index number in build settings
 		SceneManager.LoadScene (sceneToStart);
 	}
+	#endregion
 
+	#region HideDelayed
 	public void HideDelayed()
 	{
 		//Hide the main menu UI element after fading out menu for start game in scene
 		showPanels.HideMenu();
 	}
+	#endregion
 
+	#region StartGameInScene
 	public void StartGameInScene()
 	{
 		//Pause button now works if escape is pressed since we are no longer in Main menu.
@@ -119,8 +136,9 @@ public class TrainingOptions : MonoBehaviour {
 		Invoke("HideDelayed", fadeAlphaAnimationClip.length);
 		Debug.Log ("Game started in same scene! Put your game starting stuff here.");
 	}
+	#endregion
 
-
+	#region PlayNewMusic
 	public void PlayNewMusic()
 	{
 		//Fade up music nearly instantly without a click 
@@ -128,10 +146,14 @@ public class TrainingOptions : MonoBehaviour {
 		//Play music clip assigned to mainMusic in PlayMusic script
 		playMusic.PlaySelectedMusic (1);
 	}
+	#endregion
 
+	#region Get Set
+	//so other scripts can check and set trainingMode
 	public bool TrainingMode
 	{
 		get {return trainingMode;}
 		set {trainingMode = value;}
 	}
+	#endregion
 }
