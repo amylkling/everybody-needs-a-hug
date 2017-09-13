@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 
+//an object used to assist with the hug mechanic
+//by controlling targeting and player rotation
+
 public class HugHelper : MonoBehaviour {
 
+	#region Variables
 	public GameObject[] enemies;			//array to hold all current enemies that are not incapacitated
 	public GameObject targetedEnemy;		//reference the enemy that is determined to be closest
 	public float turnSpeed = 180f;			//determines how sharply the player turns when attached to this object
@@ -13,14 +17,18 @@ public class HugHelper : MonoBehaviour {
 	public float turnAmount = 90f;			//how much the player turns when attached to this object
 	private bool isInUse = false;			//ensures that the player can't hold down the turning buttons
 	public Enemy enemyScript;				//reference the enemy control script on the targeted enemy
+	#endregion
 
+	#region Start
 	// Use this for initialization
 	void Start () 
 	{
 		enemies = GameObject.FindGameObjectsWithTag("Enemy");
 		player = GameObject.FindGameObjectWithTag("Player");
 	}
-	
+	#endregion
+
+	#region Update
 	// Update is called once per frame
 	void Update () 
 	{
@@ -39,14 +47,14 @@ public class HugHelper : MonoBehaviour {
 			//and the target isn't incapacitated yet
 			if (!enemyScript.Dead)
 			{
-				//pass the enemy's control script to the Huggles script so it can determine "damage"
+				//pass the enemy's control script to the Huggles script so it can determine "damage", along with other things
 				player.GetComponent<Huggles>().enemy = enemyScript;
 
 				//determine pivot point for hugging
 				transCenter = new Vector3(targetedEnemy.transform.position.x, 0, targetedEnemy.transform.position.z);
 				transform.position = transCenter;
 
-				//rotate by turnAmount according to input only when the player is childed to this object
+				//rotate by turnAmount according to input but only when the player is childed to this object
 				if (transform.childCount != 0)
 				{
 					if (CrossPlatformInputManager.GetAxisRaw("Horizontal") > 0)
@@ -97,11 +105,10 @@ public class HugHelper : MonoBehaviour {
 			transCenter = new Vector3(0, 100, 0);
 			transform.position = transCenter;
 		}
-
-
-
 	}
+	#endregion
 
+	#region DetermineClosest
 	//compare each enemy's distance to the player and select the closest one
 	void DetermineClosest ()
 	{
@@ -117,4 +124,5 @@ public class HugHelper : MonoBehaviour {
 			}
 		}
 	}
+	#endregion
 }

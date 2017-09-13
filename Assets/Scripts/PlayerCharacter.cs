@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 //adapted from Unity's Stardard Asset "ThirdPersonCharacter"'s "ThirdPersonCharacter" script
-//all changes noted in comments
+//all additions noted in comments
 
 
 [RequireComponent(typeof(Rigidbody))]
@@ -270,7 +270,7 @@ public class PlayerCharacter : MonoBehaviour
 				soundfx.PlayOneShot(gHugAudio);
 
 				m_GroupHug = true;
-				GetComponent<Huggles>().NoMore = true;
+				GetComponent<Huggles>().GroupHugComplete = true;
 			}
 
 

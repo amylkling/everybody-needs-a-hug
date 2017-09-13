@@ -3,17 +3,16 @@ using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 
 //adapted from Unity's Stardard Asset "ThirdPersonCharacter"'s "ThirdPersonUserControl" script
-//all changes noted in comments
-
+//all additions noted in comments
 
 [RequireComponent (typeof(PlayerCharacter))]
 public class PlayerControl : MonoBehaviour
 {
+	#region Variables
 	private PlayerCharacter m_Character;	// A reference to the ThirdPersonCharacter on the object
 	private Transform m_Cam;				// A reference to the main camera in the scenes transform
 	private Vector3 m_CamForward;			// The current forward direction of the camera
-	private Vector3 m_Move;					// the world-relative desired move direction, calculated from the camForward and user input.
-	private bool m_Jump;					
+	private Vector3 m_Move;					// the world-relative desired move direction, calculated from the camForward and user input.				
 
 	//new variables
 	public bool hug;						//for activating hugging
@@ -22,15 +21,15 @@ public class PlayerControl : MonoBehaviour
 	public bool groupHug;					//for activating the finishing move
 	bool finishThem = false;				//so the groupHug only activates when all enemies are down
 	bool dodge = false;						//for activating dodging
-	bool blowKiss = false;
-	bool kissie = false;
-	bool pauseMe = false;
-	private float h;
-	private float v;
-	private Vector3 startPosition;
+	bool blowKiss = false;					//for activating the kiss effect
+	bool kissie = false;					//for allowing kissing
+	bool pauseMe = false;					//keeps track of whether the game is paused
+	private float h;						//holds horizontal input
+	private float v;						//holds vertical input
+	private Vector3 startPosition;			//the player's starting location
+	#endregion
 
-
-
+	#region Start
 	private void Start ()
 	{
 		// get the transform of the main camera
@@ -48,22 +47,19 @@ public class PlayerControl : MonoBehaviour
 		// get the third person character ( this should never be null due to require component )
 		m_Character = GetComponent<PlayerCharacter> ();
 
+		//initialize new variables
 		hugTarget = GameObject.FindGameObjectWithTag ("HugTarget");
-
 		startPosition = gameObject.transform.position;
 	}
+	#endregion
 
-
+	#region Update
 	private void Update ()
 	{
-		/*if (!m_Jump)
-		{
-			m_Jump = CrossPlatformInputManager.GetButtonDown ("Jump");
-		}*/
-
+		//while the game is unpaused
 		if(!pauseMe)
 		{
-			//grouphug input
+			//grouphug/kiss input
 			if (CrossPlatformInputManager.GetButtonDown("Jump") && finishThem)
 			{
 				groupHug = true;
@@ -85,17 +81,17 @@ public class PlayerControl : MonoBehaviour
 				GetComponent<Rigidbody>().velocity = Vector3.zero;
 			}
 		}
-
 	}
+	#endregion
 
-
+	#region FixedUpdate
 	// Fixed update is called in sync with physics
 	private void FixedUpdate ()
 	{
-
-		// read inputs when the player isn't paused
+		// read inputs when the game isn't paused
 		if(!pauseMe)
 		{
+			//movement input
 			h = CrossPlatformInputManager.GetAxis ("Horizontal");
 			v = CrossPlatformInputManager.GetAxis ("Vertical");
 
@@ -120,23 +116,10 @@ public class PlayerControl : MonoBehaviour
 			}
 		}
 			
+		// we use world-relative directions in the case of no main camera
+		//I'm using them at all times though
+		m_Move = v * Vector3.forward + h * Vector3.right;
 
-
-
-
-
-		// calculate move direction to pass to character
-		/*if (m_Cam != null)
-		{
-			// calculate camera relative direction to move:
-			m_CamForward = Vector3.Scale (m_Cam.forward, new Vector3 (1, 0, 1)).normalized;
-			m_Move = v * m_CamForward + h * m_Cam.right;
-		}
-		else
-		{*/
-			// we use world-relative directions in the case of no main camera
-			m_Move = v * Vector3.forward + h * Vector3.right;
-		//}
 		#if !MOBILE_INPUT
 		// walk speed multiplier
 		if (Input.GetKey (KeyCode.LeftControl))
@@ -157,10 +140,12 @@ public class PlayerControl : MonoBehaviour
 		}
 
 		// pass all parameters to the character control script
-		m_Character.Move (m_Move, hug, groupHug, hugTarget, dodge, blowKiss); //changed crouch to hug and jump to groupHug and added hugTarget and dodge and blowKiss
-		//m_Jump = false;
+		//changed crouch to hug and jump to groupHug and added hugTarget and dodge and blowKiss
+		m_Character.Move (m_Move, hug, groupHug, hugTarget, dodge, blowKiss); 
 	}
+	#endregion
 
+	#region Get Sets
 	//for other scripts to set hugControl
 	public void HugControl(bool b)
 	{
@@ -185,5 +170,6 @@ public class PlayerControl : MonoBehaviour
 	{
 		pauseMe = b;
 	}
+	#endregion
 }
 

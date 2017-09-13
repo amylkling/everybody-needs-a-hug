@@ -2,21 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//keeps the object above the ground, in case it clips through somehow
+//portions of this code copied from the Standard Asset First Person RigidBody Controller
+
 public class GroundCheck : MonoBehaviour {
 
-	public float checkDist = 3.1f;
-	//GameObject ground;
-	Vector3 origPos = Vector3.zero;
+	#region Variables
+	public float checkDist = 3.1f;			//maximum distance for the raycast
+	Vector3 origPos = Vector3.zero;			//holds the position the object is supposed to be at
+	#endregion
 
+	#region Start
 	// Use this for initialization
-	void Start () {
-		//ground = GameObject.FindGameObjectWithTag("Ground");
+	void Start () 
+	{
+		//set the base y vector at start so it can be reset to this point if need be
 		origPos.y = transform.parent.transform.position.y;
 	}
-	
-	// Update is called once per frame
-	void Update () {
+	#endregion
 
+	#region Update
+	// Update is called once per frame
+	void Update () 
+	{
+		//always remember what x and z position the object was at so it doesn't appear to shift anywhere
 		origPos.x = transform.parent.transform.position.x;
 		origPos.z = transform.parent.transform.position.z;
 
@@ -33,8 +42,9 @@ public class GroundCheck : MonoBehaviour {
 		}
 		else
 		{
+			//reset the object's position if it is not above ground
 			transform.parent.transform.position = origPos;
 		}
-
 	}
+	#endregion
 }

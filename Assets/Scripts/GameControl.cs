@@ -297,7 +297,7 @@ public class GameControl : MonoBehaviour {
 			}
 
 			//deactivate the ability to use the group hug
-			player.GetComponent<Huggles>().NoMore = false;
+			player.GetComponent<Huggles>().GroupHugComplete = false;
 		}
 	}
 	#endregion
