@@ -8,7 +8,6 @@ using UnityStandardAssets.CrossPlatformInput;
 public class Huggles : MonoBehaviour {
 
 	#region Variables
-	GameObject target;							//the object that marks an enemy as a target
 	public Enemy enemy;							//the control script of the enemy marked as a target
 	bool hugSnap;								//local holder for the hugEngaged variable from the PlayerCharacter script
 	public float staminaDrainRate = 10f;		//the amount of "damage" to do to the enemy every second
@@ -24,7 +23,6 @@ public class Huggles : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
-		target = GameObject.FindGameObjectWithTag("HugTarget");
 		hugSnap = gameObject.GetComponent<PlayerCharacter>().HugEngaged;
 		hugTimer = hugTimeLimit;
 	}

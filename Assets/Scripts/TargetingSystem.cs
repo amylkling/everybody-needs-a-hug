@@ -2,20 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//this script controls the camera so that it can follow an enemy the player chooses to target
+
 namespace UnityStandardAssets.Cameras
 {
 	public class TargetingSystem : MonoBehaviour {
 
-		private GameObject camera;
-		public GameObject[] enemies;
-		public bool toggle = false;
-		//private int count = -1;
-		public GameObject closestEnemy;
-		private GameObject player;
-		private bool inRange;
-		public AudioSource soundfx;
-		public AudioClip error;
+		#region Variables
+		private GameObject camera;				//reference to the main camera object
+		public GameObject[] enemies;			//array of enemies in the scene
+		public GameObject closestEnemy;			//reference to the closest enemy object
+		private GameObject player;				//reference to the player object
+		public AudioSource soundfx;				//audiosource to feed the sound effects to
+		public AudioClip error;					//error sound effect for when it is unable to target
+		#endregion
 
+		#region Start
 		// Use this for initialization
 		void Start () 
 		{
@@ -25,14 +27,17 @@ namespace UnityStandardAssets.Cameras
 			soundfx = camera.GetComponent<AudioSource>();
 		
 		}
+		#endregion
 	
+		#region Update
 		// Update is called once per frame
 		void Update()
 		{
+			//get all of the enemies in the scene and determine which is closest to the player
 			enemies = GameObject.FindGameObjectsWithTag("Enemy");
 			DetermineClosest();
 
-
+			//when the player presses the Fire1 button
 			if (Input.GetButtonDown("Fire1"))
 			{
 				//tell the camera's look at script to target the closest enemy that isn't incapacitated
@@ -42,37 +47,12 @@ namespace UnityStandardAssets.Cameras
 				}
 				else
 				{
-					//play a sound?
+					//play a sound
 					soundfx.PlayOneShot(error);
 				}
-
-				#region prototype script
-				//cycle targeting through an array of enemies
-				/*
-				count++;
-				if (count >= 0 && count < enemies.Length)
-				{
-					camera.GetComponent<LookatTarget>().SetTarget(enemies[count].transform);
-				}
-				else
-				{
-					count = -1;
-					camera.GetComponent<LookatTarget>().SetTarget(player.transform);
-				}
-				*/
-
-
-				//basic toggle based enemy targeting
-				/*
-				toggle = !toggle;
-				if(toggle)
-					camera.GetComponent<LookatTarget>().SetTarget(enemy1.transform);
-				else
-					camera.GetComponent<LookatTarget>().SetTarget(player.transform);
-				*/
-				#endregion
 			}
 
+			//when the player presses the Fire2 button
 			if (Input.GetButtonDown("Fire2"))
 			{
 				//tell the camera's look at script to target the player
@@ -85,13 +65,10 @@ namespace UnityStandardAssets.Cameras
 			{
 				camera.GetComponent<LookatTarget>().SetTarget(player.transform);
 			}
-
-
-			//if the targeted enemy leaves the screen, switch back to player
-			//this was just insurance, but I don't think it's needed
-		
 		}
+		#endregion
 
+		#region DetermineClosest
 		//compare each enemy's distance to the player and select the closest one
 		void DetermineClosest ()
 		{
@@ -110,5 +87,6 @@ namespace UnityStandardAssets.Cameras
 				}
 			}
 		}
+		#endregion
 	}
 }
